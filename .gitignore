@@ -1,0 +1,15 @@
+# Python virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+
+# Environment variables (NEVER commit this)
+.env
+
+# Large database file
+database.db
+
+# Any other log or db files
+*.log
+*.sqlite3

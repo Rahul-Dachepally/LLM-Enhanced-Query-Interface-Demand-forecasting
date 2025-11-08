@@ -1,7 +1,11 @@
 from flask import Blueprint, render_template, request
 from database.schema import get_schema
 from llm.gemini_client import GeminiClient
-from llm.prompt_builder import build_sql_prompt, build_explanation_prompt
+from llm.prompt_builder import (
+    build_sql_prompt, 
+    build_explanation_prompt,
+    build_natural_language_answer_prompt
+)
 from utils.validator import validate_sql
 from utils.executor import execute_query
 
@@ -16,6 +20,7 @@ def index():
         'query': None,
         'sql_query': None,
         'explanation': None,
+        'natural_answer': None,
         'results': None,
         'error': None
     }
@@ -47,6 +52,13 @@ def index():
                     
                     if result['success']:
                         context['results'] = result
+                        
+                        # Generate natural language answer from results
+                        nl_prompt = build_natural_language_answer_prompt(
+                            natural_query, sql, result
+                        )
+                        natural_answer = gemini_client.generate_natural_language_answer(nl_prompt)
+                        context['natural_answer'] = natural_answer
                     else:
                         context['error'] = result['error']
                         

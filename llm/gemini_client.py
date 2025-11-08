@@ -36,3 +36,9 @@ class GeminiClient:
         Generate explanation from prompt
         '''
         return self.generate_content(prompt)
+    
+    def generate_natural_language_answer(self, prompt):
+        '''
+        Generate natural language answer from query results
+        '''
+        return self.generate_content(prompt)

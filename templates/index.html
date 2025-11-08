@@ -16,6 +16,9 @@
         .error { background-color: #ffebee; padding: 15px; border-left: 4px solid #f44336; margin: 20px 0; color: #c62828; }
         .success { background-color: #e8f5e9; padding: 15px; border-left: 4px solid #34a853; margin: 20px 0; color: #2e7d32; }
         .info { background-color: #e3f2fd; padding: 15px; border-left: 4px solid #2196f3; margin: 20px 0; color: #1565c0; }
+        .natural-answer { background: linear-gradient(135deg, #e8f5e9, #c8e6c9); padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 5px solid #34a853; }
+        .natural-answer h3 { margin-top: 0; color: #2e7d32; display: flex; align-items: center; }
+        .natural-answer-content { font-size: 16px; line-height: 1.6; color: #1b5e20; }
         table { width: 100%; border-collapse: collapse; margin: 20px 0; }
         th { background-color: #4285f4; color: white; padding: 12px; text-align: left; font-weight: bold; }
         td { padding: 10px; border-bottom: 1px solid #ddd; }
@@ -35,15 +38,20 @@
         .loading { text-align: center; padding: 20px; }
         .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #4285f4; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .details-toggle { background: #f5f5f5; padding: 10px; margin: 10px 0; cursor: pointer; border-radius: 4px; }
+        .details-toggle:hover { background: #e0e0e0; }
+        .collapsible-content { display: none; }
+        .collapsible-content.active { display: block; }
+        .icon { margin-right: 5px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1> LLM-Enhanced Query Interface </h1>
+        <h1>🤖 LLM-Enhanced Query Interface </h1>
         <p><strong>M5 Forecasting Database</strong> - Natural Language to SQL Translation with AI</p>
         
         <div class="info">
-            <strong>🤖 AI-Powered Query Generation:</strong> This interface uses Google Gemini to understand your natural language queries and generate optimized SQL queries automatically.
+            <strong>🤖 AI-Powered Query Generation:</strong> This interface uses Google Gemini to understand your natural language queries, generate optimized SQL queries, and provide answers in natural language.
         </div>
         
         <div class="query-box">
@@ -58,23 +66,35 @@
                 <button class="suggestion-btn" onclick="setQuery('Show all events')">Events</button>
             </div>
             
-            <button onclick="submitQuery()">🚀 Generate SQL</button>
+            <button onclick="submitQuery()">🚀 Generate Answer</button>
             <div id="loadingSpinner" style="display:none;" class="loading">
                 <div class="spinner"></div>
-                <p>Gemini is analyzing...</p>
+                <p>Gemini is analyzing your query...</p>
             </div>
         </div>
         
-        {% if sql_query %}
-        <div class="sql-display">
-            <strong>🤖 Generated SQL:</strong><br>
-            <code>{{ sql_query }}</code>
+        {% if natural_answer %}
+        <div class="natural-answer">
+            <h3><span class="icon">💬</span>Answer</h3>
+            <div class="natural-answer-content">{{ natural_answer }}</div>
         </div>
         {% endif %}
         
-        {% if explanation %}
-        <div class="success">
-            <strong>💡 Explanation:</strong> {{ explanation }}
+        {% if sql_query %}
+        <div class="details-toggle" onclick="toggleDetails('sqlDetails')">
+            <strong>🔍 View Technical Details (SQL Query & Explanation)</strong> ▼
+        </div>
+        <div id="sqlDetails" class="collapsible-content">
+            <div class="sql-display">
+                <strong>🤖 Generated SQL:</strong><br>
+                <code>{{ sql_query }}</code>
+            </div>
+            
+            {% if explanation %}
+            <div class="success">
+                <strong>💡 Technical Explanation:</strong> {{ explanation }}
+            </div>
+            {% endif %}
         </div>
         {% endif %}
         
@@ -96,26 +116,31 @@
             </div>
         </div>
         
-        <h2>📊 Results</h2>
-        <div style="overflow-x: auto;">
-            <table>
-                <thead>
-                    <tr>
-                        {% for col in results.columns %}
-                        <th>{{ col }}</th>
+        <div class="details-toggle" onclick="toggleDetails('dataDetails')">
+            <strong>📊 View Raw Data Table</strong> ▼
+        </div>
+        <div id="dataDetails" class="collapsible-content">
+            <h2>📊 Raw Results</h2>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            {% for col in results.columns %}
+                            <th>{{ col }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in results.data %}
+                        <tr>
+                            {% for col in results.columns %}
+                            <td>{{ row[col] }}</td>
+                            {% endfor %}
+                        </tr>
                         {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in results.data %}
-                    <tr>
-                        {% for col in results.columns %}
-                        <td>{{ row[col] }}</td>
-                        {% endfor %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
         {% endif %}
         
@@ -144,12 +169,18 @@
                 alert('Please enter a query');
                 return;
             }
+            document.getElementById('hiddenQuery').value = query;
             document.getElementById('loadingSpinner').style.display = 'block';
             document.querySelector('form').submit();
         }
         
         function setQuery(text) {
             document.getElementById('queryInput').value = text;
+        }
+        
+        function toggleDetails(id) {
+            const element = document.getElementById(id);
+            element.classList.toggle('active');
         }
         
         document.getElementById('queryInput').addEventListener('keydown', function(e) {
@@ -162,18 +193,5 @@
     <form method="POST" action="/" style="display:none;">
         <input type="text" name="query" id="hiddenQuery">
     </form>
-    
-    <script>
-        function submitQuery() {
-            const query = document.getElementById('queryInput').value;
-            if (!query.trim()) {
-                alert('Please enter a query');
-                return;
-            }
-            document.getElementById('hiddenQuery').value = query;
-            document.getElementById('loadingSpinner').style.display = 'block';
-            document.querySelector('form').submit();
-        }
-    </script>
 </body>
 </html>

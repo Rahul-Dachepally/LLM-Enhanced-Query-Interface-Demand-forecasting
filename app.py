@@ -3,6 +3,7 @@ from config import config
 from database.connection import close_db_connection
 from routes import web_bp, api_bp
 import google.generativeai as genai
+from routes.forecast_routes import forecast_bp
 
 def create_app(config_name='default'):
     '''Application factory pattern'''
@@ -15,6 +16,7 @@ def create_app(config_name='default'):
     # Register blueprints
     app.register_blueprint(web_bp)
     app.register_blueprint(api_bp)
+    app.register_blueprint(forecast_bp)
     
     return app
 

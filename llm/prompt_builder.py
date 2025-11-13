@@ -11,13 +11,14 @@ def build_sql_prompt(natural_query, schema):
 {schema_context}
 
 Important Rules:
-1. ALWAYS include a LIMIT clause (max 1000 rows)
-2. Only generate SELECT queries (no INSERT, UPDATE, DELETE, DROP, etc.)
-3. For sales data, columns starting with 'd_' represent daily sales (d_1, d_2, ... d_1913)
-4. Use the latest available 'd_' column for current sales analysis
-5. Return ONLY the SQL query without any explanation, markdown, or code blocks
-6. Do not include semicolons at the end
-7. Use proper SQL syntax for SQLite
+1.ALWAYS include a LIMIT clause (max 1000 rows)
+2.Only generate SELECT queries (no INSERT, UPDATE, DELETE, DROP, etc.)
+3.Use the sales_long table for sales data instead of wide-format columns
+4.Each row in sales_long represents daily sales with columns (item_id, store_id, date, sales)
+5.Use the most recent date column for current sales analysis
+6.Return ONLY the SQL query without any explanation, markdown, or code blocks
+7.Do not include semicolons at the end
+8.Use proper SQL syntax for SQLite
 
 Natural Language Query: {natural_query}
 

@@ -41,7 +41,7 @@ class ProphetForecaster(BaseModel):
         
         return self
     
-    def predict(self, horizon=28):
+    def predict(self, horizon=30):
         '''
         Generate forecast
         Args:
